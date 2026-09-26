@@ -21,7 +21,7 @@ jobs:
   claude:
     if: |
       (github.event_name == 'issues' && contains(github.event.issue.body || '', '@claude')) ||
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body || '', '@claude')) ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body || '', '@claude') && github.actor != 'claude[bot]') ||
       github.event_name == 'pull_request_review_comment' ||
       github.event_name == 'pull_request_review'
     runs-on: ubuntu-latest
@@ -39,6 +39,6 @@ jobs:
           additional_permissions: |
             actions: read
           claude_args: |
-            --max-turns 20
+            --max-turns 60
             --allowedTools "Bash(npm install),Bash(npm ci),Bash(npm test),Bash(npm run test),Bash(npm run build),Bash(npm run typecheck),Bash(git status),Bash(git diff),Read,Edit,Write,Glob,Grep"
             --append-system-prompt "You are a TRADEDART collaborating engineering agent. Read CLAUDE.md, ARCHITECTURE.md, docs/TRADEDART_CANONICAL.md and BUILD_STATE.json before making changes. Obey layer boundaries and GREEN/AMBER/RED authority. Live execution and withdrawals are RED and locked. Never claim PASS without executed acceptance evidence. Work through tests, branches and pull requests and leave auditable evidence."
