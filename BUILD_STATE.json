@@ -3,7 +3,7 @@
   "project": "TRADEDART",
   "mode": "PAPER_ONLY",
   "live_execution_enabled": false,
-  "current_milestone": "M0-CONTROL-PLANE",
+  "current_milestone": "M1-FOUNDATION",
   "status": "BUILDING",
   "invariants": {
     "strategy_id_required": true,
@@ -15,7 +15,7 @@
     {
       "id": "M0-CONTROL-PLANE",
       "name": "Agentic control plane",
-      "status": "BUILDING",
+      "status": "PASS",
       "acceptance": [
         "Canonical architecture committed",
         "Claude workflow triggers",
@@ -26,7 +26,15 @@
     {
       "id": "M1-FOUNDATION",
       "name": "State contracts and application foundation",
-      "status": "NOT_STARTED"
+      "status": "BUILDING",
+      "acceptance": [
+        "Application scaffold runs",
+        "Typed canonical state contracts exist for all seven layers",
+        "Layer-boundary tests prevent bypasses",
+        "Paper-only execution mode enforced by tests",
+        "No secret/private-key fields exist in domain contracts",
+        "Typecheck, tests and production build pass"
+      ]
     },
     {
       "id": "M2-DATA",
@@ -64,5 +72,14 @@
       "status": "LOCKED"
     }
   ],
-  "evidence": []
+  "evidence": [
+    {
+      "milestone": "M0-CONTROL-PLANE",
+      "result": "PASS",
+      "workflow_run": 36207605214,
+      "issue": 1,
+      "commit": "6f40b4cf87c82cafd6f7da32c5ea7501546a1eac",
+      "note": "Claude authenticated, read control documents, executed git status, and produced auditable issue evidence."
+    }
+  ]
 }
