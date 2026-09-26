@@ -2,10 +2,13 @@ import type { SourceAttribution } from '../domain/contracts.js';
 import { createExecutionEngine } from '../layers/execution.js';
 import { TradeLedger, ledgerEntryFromExecution } from '../layers/ledger.js';
 import { createMarketContext } from '../layers/market.js';
+import { legacyMomentumPlugin } from '../layers/legacy-momentum.js';
 import { createResearchSnapshot } from '../layers/research.js';
 import { defineRiskLimits, evaluateRisk, type RiskContext } from '../layers/risk.js';
-import { createOrderIntent, createStrategy, type OrderIntentInput } from '../layers/strategy.js';
-import { createChallenge, createThesis } from '../layers/thesis.js';
+import { reconcilePaperEquity, updatePaperRisk } from '../layers/paper-portfolio.js';
+import { type OrderIntentInput } from '../layers/strategy.js';
+import { StrategyRegistry } from '../layers/strategy-plugins.js';
+import { createChallenge, createThesis, createThesisSignal } from '../layers/thesis.js';
 
 /** Deterministic paper fixture exercising every layer of the pipeline. No network access. */
 const FIXTURE_SOURCE: SourceAttribution = {
@@ -23,6 +26,10 @@ export const DEMO_INTENT_INPUT: OrderIntentInput = {
 };
 
 export function demoRiskContext(overrides: Partial<RiskContext> = {}): RiskContext {
+  const snapshot = reconcilePaperEquity({
+    cashQuote: 10000, reservedQuote: 0, realizedPnlQuote: 0, positions: [], marks: {},
+    openOrderIntentIds: [], asOf: '2026-01-01T00:05:00.000Z', maxMarkAgeMs: 60000,
+  });
   return {
     decisionId: 'RISK-0001',
     decidedAt: '2026-01-01T00:06:00.000Z',
@@ -31,10 +38,16 @@ export function demoRiskContext(overrides: Partial<RiskContext> = {}): RiskConte
       maxPositionNotionalQuote: 5000,
       humanApprovalAboveNotionalQuote: 2500,
       maxSlippageBps: 50,
+      maxRiskPctEquity: 1,
+      maxNotionalPctEquity: 25,
+      dailyLossPct: 3,
+      totalDrawdownPct: 8,
+      maxAccountAgeMs: 900000,
     }),
     portfolio: { availableQuote: 10000, portfolioValueQuote: 10000, openOrderIntentIds: [], assetExposureQuote: {} },
     venueOperational: true,
     estimatedSlippageBps: 5,
+    paperRisk: updatePaperRisk(snapshot, { dailyLossPct: 3, totalDrawdownPct: 8 }),
     ...overrides,
   };
 }
@@ -47,6 +60,8 @@ export function buildDemoPipeline() {
     regime: 'BTC_LED',
     metrics: {
       btcPrice: { status: 'AVAILABLE', value: 60000, source: FIXTURE_SOURCE },
+      'BTC.price': { status: 'AVAILABLE', value: 60000, source: FIXTURE_SOURCE },
+      'BTC.changePct': { status: 'AVAILABLE', value: 4, source: FIXTURE_SOURCE },
       fundingRate: { status: 'MISSING', reason: 'no attributable source in fixture' },
     },
     sources: [FIXTURE_SOURCE],
@@ -58,6 +73,7 @@ export function buildDemoPipeline() {
     frozenAt: '2026-01-01T00:01:00.000Z',
     metrics: {
       price: { status: 'AVAILABLE', value: 60000, source: FIXTURE_SOURCE },
+      changePct: { status: 'AVAILABLE', value: 4, source: FIXTURE_SOURCE },
       feesToMarketCap: { status: 'MISSING', reason: 'no primary source' },
     },
     evidence: [{ claim: 'Fixture evidence item', source: FIXTURE_SOURCE }],
@@ -86,24 +102,14 @@ export function buildDemoPipeline() {
     verdict: 'THESIS_SURVIVES',
   });
 
-  const strategy = createStrategy(thesis, challenge, {
-    id: 'STRAT-BTC-0001',
-    createdAt: '2026-01-01T00:04:00.000Z',
-    rules: {
-      entry: 'Limit buy at 60000',
-      exit: 'Exit at target, stop or invalidation',
-      stopLossPrice: 57000,
-      takeProfitPrice: 66000,
-      positionSizeQuote: 1200,
-      maxPositionExposurePct: 20,
-      maxPortfolioExposurePct: 50,
-      timeframe: '4-8 weeks',
-      allowedAssets: ['BTC'],
-      invalidation: ['Daily close below 57000'],
-    },
-  });
-
-  const intent = createOrderIntent(strategy, DEMO_INTENT_INPUT);
+  const registry = new StrategyRegistry([legacyMomentumPlugin({
+    strategyId: 'STRAT-BTC-0001', intentId: DEMO_INTENT_INPUT.id, asset: 'BTC',
+    minMovePct: 3, desiredQuantity: 0.02, stopLossPct: 5, takeProfitPct: 10,
+  })]);
+  const signal = createThesisSignal(thesis, research);
+  const proposal = registry.propose(['LEGACY_MOMENTUM'], { signal, thesis, challenge })[0];
+  if (!proposal) throw new Error('paper fixture did not produce a strategy proposal');
+  const { strategy, intent } = proposal;
   const riskContext = demoRiskContext();
   const decision = evaluateRisk(intent, strategy, riskContext);
 
@@ -136,7 +142,7 @@ export function buildDemoPipeline() {
     ),
   );
 
-  return { market, research, thesis, challenge, strategy, intent, riskContext, decision, engine, execution, ledger, entry };
+  return { market, research, thesis, signal, challenge, strategy, intent, riskContext, decision, engine, execution, ledger, entry };
 }
 
 export function runPaperPipelineDemo() {
