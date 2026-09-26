@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "project": "TRADEDART",
+  "mode": "PAPER_ONLY",
+  "live_execution_enabled": false,
+  "current_milestone": "M0-CONTROL-PLANE",
+  "status": "BUILDING",
+  "invariants": {
+    "strategy_id_required": true,
+    "risk_veto_absolute": true,
+    "immutable_history": true,
+    "withdrawals_disabled": true
+  },
+  "milestones": [
+    {
+      "id": "M0-CONTROL-PLANE",
+      "name": "Agentic control plane",
+      "status": "BUILDING",
+      "acceptance": [
+        "Canonical architecture committed",
+        "Claude workflow triggers",
+        "Claude authenticates",
+        "Bootstrap issue receives auditable response"
+      ]
+    },
+    {
+      "id": "M1-FOUNDATION",
+      "name": "State contracts and application foundation",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "M2-DATA",
+      "name": "Unified market, exchange and wallet data",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "M3-RESEARCH",
+      "name": "Research and adversarial thesis",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "M4-STRATEGY-RISK",
+      "name": "Deterministic strategy and risk veto",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "M5-PAPER",
+      "name": "Paper execution and accounting",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "M6-ROUTER-LEARNING",
+      "name": "Profit router and learning",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "M7-UI",
+      "name": "Unified responsive product UI",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": "M8-LIVE-GATE",
+      "name": "Separate live execution authorization gate",
+      "status": "LOCKED"
+    }
+  ],
+  "evidence": []
+}
