@@ -26,7 +26,7 @@
     {
       "id": "M1-FOUNDATION",
       "name": "State contracts and application foundation",
-      "status": "BUILDING",
+      "status": "PASS",
       "acceptance": [
         "Application scaffold runs",
         "Typed canonical state contracts exist for all seven layers",
@@ -80,6 +80,20 @@
       "issue": 1,
       "commit": "6f40b4cf87c82cafd6f7da32c5ea7501546a1eac",
       "note": "Claude authenticated, read control documents, executed git status, and produced auditable issue evidence."
+    },
+    {
+      "milestone": "M1-FOUNDATION",
+      "result": "PASS",
+      "workflow_run": 36207773738,
+      "issue": 2,
+      "branch": "claude/issue-2-20260926-0115",
+      "commands": ["npm install", "npm run typecheck", "npm test", "npm run build"],
+      "results": {
+        "typecheck": "exit 0, no errors (includes @ts-expect-error compile-time boundary check)",
+        "test": "45 tests, 8 suites, 45 pass, 0 fail; app entry executed in paper mode",
+        "build": "tsc production build to dist/ succeeded; node dist/main.js ran the paper pipeline (riskOutcome PASS, lifecycle PREVIEW..RECONCILE, ledgerSize 1)"
+      },
+      "note": "Evidence produced on branch; merge to main pending human review of the PR. Live execution remains disabled; M8-LIVE-GATE remains LOCKED."
     }
   ]
 }
