@@ -116,6 +116,17 @@ export interface ThesisSnapshot {
   readonly whatWouldProveWrong: readonly string[];
 }
 
+/** A research-backed observation explicitly linked to an approved thesis. */
+export interface ThesisSignal {
+  readonly layer: 'THESIS';
+  readonly kind: 'ThesisSignal';
+  readonly thesisId: ThesisId;
+  readonly researchSnapshotId: ResearchSnapshotId;
+  readonly asset: AssetSymbol;
+  readonly asOf: ISOTimestamp;
+  readonly metrics: Readonly<Record<string, Metric>>;
+}
+
 export type ChallengeDimension =
   | 'VALUATION'
   | 'UTILITY'

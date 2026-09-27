@@ -6,6 +6,7 @@ import type {
   ThesisChallenge,
   ThesisId,
   ThesisSnapshot,
+  ThesisSignal,
 } from '../domain/contracts.js';
 import { ContractValidationError } from '../domain/errors.js';
 import {
@@ -69,5 +70,18 @@ export function createChallenge(thesis: ThesisSnapshot, input: ChallengeInput): 
     createdAt: input.createdAt,
     findings: input.findings,
     verdict: input.verdict,
+  });
+}
+
+/** Propagates attributed research observations through the thesis boundary for strategy evaluation. */
+export function createThesisSignal(thesis: ThesisSnapshot, research: ResearchSnapshot): ThesisSignal {
+  assertContract(thesis, 'THESIS', 'ThesisSnapshot', 'THESIS');
+  assertContract(research, 'RESEARCH', 'ResearchSnapshot', 'THESIS');
+  if (thesis.researchSnapshotId !== research.id || thesis.asset !== research.asset) {
+    throw new ContractValidationError('thesis signal must reference the approved research snapshot and asset');
+  }
+  return immutableCopy<ThesisSignal>({
+    layer: 'THESIS', kind: 'ThesisSignal', thesisId: thesis.id,
+    researchSnapshotId: research.id, asset: thesis.asset, asOf: research.frozenAt, metrics: research.metrics,
   });
 }

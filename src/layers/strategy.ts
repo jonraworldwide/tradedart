@@ -38,6 +38,7 @@ export interface StrategyInput {
   readonly id: string;
   readonly createdAt: string;
   readonly rules: StrategyRules;
+  readonly version?: number;
 }
 
 /** Strategy Engine: only a thesis that survived its adversarial challenge becomes a strategy. */
@@ -52,6 +53,9 @@ export function createStrategy(thesis: ThesisSnapshot, challenge: ThesisChalleng
   }
   requireTimestamp(input.createdAt, 'createdAt');
   validateStrategyRules(input.rules);
+  if (input.version !== undefined && (!Number.isSafeInteger(input.version) || input.version < 1)) {
+    throw new ContractValidationError('strategy version must be a positive integer');
+  }
   if (!input.rules.allowedAssets.includes(thesis.asset)) {
     throw new ContractValidationError(`strategy must allow thesis asset ${thesis.asset}`);
   }
@@ -59,7 +63,7 @@ export function createStrategy(thesis: ThesisSnapshot, challenge: ThesisChalleng
     layer: 'STRATEGY',
     kind: 'Strategy',
     id: toId<StrategyId>(input.id, 'id'),
-    version: 1,
+    version: input.version ?? 1,
     thesisId: thesis.id,
     challengeId: challenge.id,
     rules: input.rules,
