@@ -40,7 +40,7 @@
       "id": "M1.5-UI-SHELL",
       "name": "Wealth command centre shell",
       "status": "BUILDING",
-      "acceptance": ["Real typed paper data and responsive browser verification pending"]
+      "acceptance": ["Engine-derived fixture Paper Lab present; real typed account data and responsive browser verification pending"]
     },
     {
       "id": "M2-DATA",
@@ -101,6 +101,13 @@
         "build": "tsc production build to dist/ succeeded; node dist/main.js ran the paper pipeline (riskOutcome PASS, lifecycle PREVIEW..RECONCILE, ledgerSize 1)"
       },
       "note": "Evidence produced on branch; main now contains M1 and M1.5 shell. Live execution remains disabled; M8-LIVE-GATE remains LOCKED."
+    },
+    {
+      "milestone": "M1.5-UI-SHELL",
+      "result": "PARTIAL",
+      "branch": "codex/paper-risk-strategy-foundation",
+      "commands": ["npm run typecheck", "npm test", "npm run build"],
+      "note": "Paper Lab statically presents engine-generated dated fixture risk cases; dashboard no longer displays invented account values. Browser visual verification and real M2 feeds are still pending."
     },
     {
       "milestone": "M4-STRATEGY-RISK",
